@@ -2,13 +2,14 @@
 fastapi==0.110.0
 uvicorn==0.27.0
 pydantic==2.6.0
+pydantic-settings==2.1.0
 python-multipart==0.0.9
 
 # Anthropic Claude API
 anthropic==0.25.0
 
-# NLP Tools
-jieba==0.42.1
+# NLP Tools (optional for enhanced grammar detection)
+# jieba==0.42.1  # Commented out - install separately if needed
 
 # Database
 sqlalchemy==2.0.27
