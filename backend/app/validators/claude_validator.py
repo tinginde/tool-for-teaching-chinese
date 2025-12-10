@@ -1,12 +1,12 @@
 """
-Claude API 语法验证模块
-使用 Claude API 进行语义分析，确保语法使用的正确性
+Claude API 語法驗證模組
+使用 Claude API 進行語義分析，確保語法使用的正確性
 """
 import json
 import os
 from typing import List, Dict, Any, Optional
 
-# anthropic 是可选依赖，如果没有安装，Claude 验证功能将不可用
+# anthropic 是可選依賴，如果沒有安裝，Claude 驗證功能將不可用
 try:
     from anthropic import Anthropic, AsyncAnthropic
     ANTHROPIC_AVAILABLE = True
@@ -17,46 +17,46 @@ except ImportError:
 
 
 class ClaudeValidator:
-    """Claude API 验证器 - 语义分析"""
+    """Claude API 驗證器 - 語義分析"""
 
-    # 语法验证 Prompt 模板
-    GRAMMAR_VALIDATION_PROMPT = """请分析以下文章中指定语法点的使用是否正确。
+    # 語法驗證 Prompt 模板
+    GRAMMAR_VALIDATION_PROMPT = """請分析以下文章中指定語法點的使用是否正確。
 
-## 文章内容
+## 文章內容
 {article_text}
 
-## 需要检查的语法点
+## 需要檢查的語法點
 **{grammar_point_name}**：{grammar_point_description}
 
-## 检测到的使用位置
+## 檢測到的使用位置
 {detected_usage}
 
-## 请评估
-1. 这些使用是否符合该语法点的定义？
-2. 语法使用是否正确、自然？
-3. 是否有其他位置也使用了此语法点但未被检测到？
+## 請評估
+1. 這些使用是否符合該語法點的定義？
+2. 語法使用是否正確、自然？
+3. 是否有其他位置也使用了此語法點但未被檢測到？
 
-请以 JSON 格式回复：
+請以 JSON 格式回復：
 {{
   "is_correct": true/false,
   "confidence": 0.0-1.0,
-  "issues": ["问题描述..."],
-  "missed_instances": ["未检测到的使用..."],
-  "suggestions": ["改进建议..."]
+  "issues": ["問題描述..."],
+  "missed_instances": ["未檢測到的使用..."],
+  "suggestions": ["改進建議..."]
 }}
 
-请只返回 JSON，不要包含其他解释文字。"""
+請只返回 JSON，不要包含其他解釋文字。"""
 
     def __init__(self, api_key: Optional[str] = None):
         """
-        初始化 Claude 验证器
+        初始化 Claude 驗證器
 
         Args:
-            api_key: Anthropic API key，如果不提供则从环境变量读取
+            api_key: Anthropic API key，如果不提供則從環境變數讀取
         """
         if not ANTHROPIC_AVAILABLE:
             raise ImportError(
-                "anthropic 包未安装。请运行：pip install anthropic"
+                "anthropic 包未安裝。請運行：pip install anthropic"
             )
 
         self.api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
@@ -68,16 +68,16 @@ class ClaudeValidator:
 
     def format_detected_instances(self, instances: List[Dict[str, Any]]) -> str:
         """
-        格式化检测到的语法实例
+        格式化檢測到的語法實例
 
         Args:
-            instances: 检测到的语法实例列表
+            instances: 檢測到的語法實例列表
 
         Returns:
             格式化的字符串
         """
         if not instances:
-            return "未检测到此语法点的使用。"
+            return "未檢測到此語法點的使用。"
 
         formatted = []
         for i, instance in enumerate(instances, 1):
@@ -95,16 +95,16 @@ class ClaudeValidator:
         detected_instances: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """
-        异步验证语法使用是否正确
+        異步驗證語法使用是否正確
 
         Args:
             article_text: 文章文本
-            grammar_name: 语法点名称
-            grammar_description: 语法点描述
-            detected_instances: 检测到的语法实例
+            grammar_name: 語法點名稱
+            grammar_description: 語法點描述
+            detected_instances: 檢測到的語法實例
 
         Returns:
-            验证结果
+            驗證結果
             {
                 "is_correct": True,
                 "confidence": 0.95,
@@ -113,7 +113,7 @@ class ClaudeValidator:
                 "suggestions": []
             }
         """
-        # 构建 prompt
+        # 構建 prompt
         prompt = self.GRAMMAR_VALIDATION_PROMPT.format(
             article_text=article_text,
             grammar_point_name=grammar_name,
@@ -122,27 +122,27 @@ class ClaudeValidator:
         )
 
         try:
-            # 调用 Claude API
+            # 調用 Claude API
             response = await self.async_client.messages.create(
                 model="claude-sonnet-4-20250514",
                 max_tokens=1024,
                 messages=[{"role": "user", "content": prompt}]
             )
 
-            # 解析响应
+            # 解析響應
             response_text = response.content[0].text.strip()
 
-            # 尝试提取 JSON
+            # 嘗試提取 JSON
             validation_result = self._parse_validation_response(response_text)
 
             return validation_result
 
         except Exception as e:
-            # 如果 API 调用失败，返回默认结果
+            # 如果 API 調用失敗，返回默認結果
             return {
-                "is_correct": True,  # 保守估计为正确
+                "is_correct": True,  # 保守估計為正確
                 "confidence": 0.5,
-                "issues": [f"API 调用失败: {str(e)}"],
+                "issues": [f"API 調用失敗: {str(e)}"],
                 "missed_instances": [],
                 "suggestions": []
             }
@@ -155,18 +155,18 @@ class ClaudeValidator:
         detected_instances: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """
-        同步验证语法使用是否正确
+        同步驗證語法使用是否正確
 
         Args:
             article_text: 文章文本
-            grammar_name: 语法点名称
-            grammar_description: 语法点描述
-            detected_instances: 检测到的语法实例
+            grammar_name: 語法點名稱
+            grammar_description: 語法點描述
+            detected_instances: 檢測到的語法實例
 
         Returns:
-            验证结果
+            驗證結果
         """
-        # 构建 prompt
+        # 構建 prompt
         prompt = self.GRAMMAR_VALIDATION_PROMPT.format(
             article_text=article_text,
             grammar_point_name=grammar_name,
@@ -175,43 +175,43 @@ class ClaudeValidator:
         )
 
         try:
-            # 调用 Claude API
+            # 調用 Claude API
             response = self.client.messages.create(
                 model="claude-sonnet-4-20250514",
                 max_tokens=1024,
                 messages=[{"role": "user", "content": prompt}]
             )
 
-            # 解析响应
+            # 解析響應
             response_text = response.content[0].text.strip()
 
-            # 尝试提取 JSON
+            # 嘗試提取 JSON
             validation_result = self._parse_validation_response(response_text)
 
             return validation_result
 
         except Exception as e:
-            # 如果 API 调用失败，返回默认结果
+            # 如果 API 調用失敗，返回默認結果
             return {
                 "is_correct": True,
                 "confidence": 0.5,
-                "issues": [f"API 调用失败: {str(e)}"],
+                "issues": [f"API 調用失敗: {str(e)}"],
                 "missed_instances": [],
                 "suggestions": []
             }
 
     def _parse_validation_response(self, response_text: str) -> Dict[str, Any]:
         """
-        解析 Claude 的验证响应
+        解析 Claude 的驗證響應
 
         Args:
             response_text: Claude 返回的文本
 
         Returns:
-            解析后的验证结果
+            解析後的驗證結果
         """
         try:
-            # 尝试查找 JSON 块
+            # 嘗試查找 JSON 塊
             # 可能的格式：```json\n{...}\n``` 或直接 {...}
             json_start = response_text.find('{')
             json_end = response_text.rfind('}') + 1
@@ -220,7 +220,7 @@ class ClaudeValidator:
                 json_text = response_text[json_start:json_end]
                 result = json.loads(json_text)
 
-                # 确保包含必需的字段
+                # 確保包含必需的字段
                 return {
                     "is_correct": result.get("is_correct", True),
                     "confidence": float(result.get("confidence", 0.8)),
@@ -232,11 +232,11 @@ class ClaudeValidator:
                 raise ValueError("No JSON found in response")
 
         except (json.JSONDecodeError, ValueError) as e:
-            # 如果解析失败，返回保守的默认值
+            # 如果解析失敗，返回保守的默認值
             return {
                 "is_correct": True,
                 "confidence": 0.7,
-                "issues": [f"响应解析失败: {str(e)}"],
+                "issues": [f"響應解析失敗: {str(e)}"],
                 "missed_instances": [],
                 "suggestions": []
             }
@@ -247,11 +247,11 @@ class ClaudeValidator:
         grammar_checks: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """
-        批量验证多个语法点
+        批量驗證多個語法點
 
         Args:
             article_text: 文章文本
-            grammar_checks: 语法检查列表
+            grammar_checks: 語法檢查列表
                 [
                     {
                         "name": "把字句",
@@ -262,7 +262,7 @@ class ClaudeValidator:
                 ]
 
         Returns:
-            验证结果列表
+            驗證結果列表
         """
         results = []
 
@@ -281,7 +281,7 @@ class ClaudeValidator:
         return results
 
 
-# 便捷函数
+# 便捷函數
 async def validate_grammar_with_claude(
     article_text: str,
     grammar_name: str,
@@ -290,17 +290,17 @@ async def validate_grammar_with_claude(
     api_key: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    便捷函数：使用 Claude API 验证语法
+    便捷函數：使用 Claude API 驗證語法
 
     Args:
         article_text: 文章文本
-        grammar_name: 语法点名称
-        grammar_description: 语法点描述
-        detected_instances: 检测到的实例
-        api_key: API key（可选）
+        grammar_name: 語法點名稱
+        grammar_description: 語法點描述
+        detected_instances: 檢測到的實例
+        api_key: API key（可選）
 
     Returns:
-        验证结果
+        驗證結果
     """
     validator = ClaudeValidator(api_key)
     return await validator.validate_grammar_async(

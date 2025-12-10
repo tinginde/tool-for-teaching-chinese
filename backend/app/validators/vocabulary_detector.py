@@ -1,27 +1,27 @@
 """
-生词检测模块
-使用精确字符串匹配检测生词，目标准确率：100%
+生詞檢測模組
+使用精確字符串匹配檢測生詞，目標準確率：100%
 """
 from typing import List, Dict, Any
 
 
 class VocabularyDetector:
-    """生词检测器 - 精确字符串匹配"""
+    """生詞檢測器 - 精確字符串匹配"""
 
     def detect_vocabulary(self, article_text: str, vocab_list: List[str]) -> Dict[str, Any]:
         """
-        检测文章中的生词出现情况
+        檢測文章中的生詞出現情況
 
         Args:
             article_text: 文章文本
-            vocab_list: 生词列表
+            vocab_list: 生詞列表
 
         Returns:
-            检测结果，包含每个生词的出现次数和位置信息
+            檢測結果，包含每個生詞的出現次數和位置信息
             {
                 "vocab_check": [
                     {
-                        "word": "环境",
+                        "word": "環境",
                         "found": True,
                         "count": 3,
                         "positions": [[23, 25], [67, 69], [102, 104]]
@@ -46,14 +46,14 @@ class VocabularyDetector:
 
     def _find_all_positions(self, text: str, word: str) -> List[List[int]]:
         """
-        找到词语在文本中所有出现的位置
+        找到詞語在文本中所有出現的位置
 
         Args:
             text: 要搜索的文本
-            word: 要查找的词语
+            word: 要查找的詞語
 
         Returns:
-            位置列表，每个位置是 [start, end] 格式
+            位置列表，每個位置是 [start, end] 格式
         """
         positions = []
         start = 0
@@ -63,19 +63,19 @@ class VocabularyDetector:
             if pos == -1:
                 break
             positions.append([pos, pos + len(word)])
-            start = pos + 1  # 移动到下一个位置，处理重叠情况
+            start = pos + 1  # 移動到下一個位置，處理重疊情況
 
         return positions
 
     def check_coverage(self, vocab_results: List[Dict]) -> Dict[str, Any]:
         """
-        检查生词覆盖率
+        檢查生詞覆蓋率
 
         Args:
-            vocab_results: 生词检测结果列表
+            vocab_results: 生詞檢測結果列表
 
         Returns:
-            覆盖率统计信息
+            覆蓋率統計信息
         """
         total_words = len(vocab_results)
         found_words = sum(1 for v in vocab_results if v["found"])
@@ -90,17 +90,17 @@ class VocabularyDetector:
         }
 
 
-# 便捷函数
+# 便捷函數
 def detect_vocabulary(article_text: str, vocab_list: List[str]) -> Dict[str, Any]:
     """
-    便捷函数：检测文章中的生词
+    便捷函數：檢測文章中的生詞
 
     Args:
         article_text: 文章文本
-        vocab_list: 生词列表
+        vocab_list: 生詞列表
 
     Returns:
-        检测结果
+        檢測結果
     """
     detector = VocabularyDetector()
     return detector.detect_vocabulary(article_text, vocab_list)

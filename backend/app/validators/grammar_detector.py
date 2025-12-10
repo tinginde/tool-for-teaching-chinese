@@ -1,11 +1,11 @@
 """
-语法点检测模块
-使用正则表达式 + jieba 分词检测语法点，目标准确率：90%
+語法點檢測模組
+使用正則表達式 + jieba 分詞檢測語法點，目標準確率：90%
 """
 import re
 from typing import List, Dict, Any, Optional
 
-# jieba 是可选依赖，如果没有安装，分词功能将不可用
+# jieba 是可選依賴，如果沒有安裝，分詞功能將不可用
 try:
     import jieba.posseg as pseg
     JIEBA_AVAILABLE = True
@@ -15,9 +15,9 @@ except ImportError:
 
 
 class GrammarDetector:
-    """语法点检测器 - 规则匹配 + 分词"""
+    """語法點檢測器 - 規則匹配 + 分詞"""
 
-    # 语法点的正则模式库
+    # 語法點的正則模式庫
     GRAMMAR_PATTERNS = {
         "把字句": r"把[\u4e00-\u9fa5]{1,10}[给]?[\u4e00-\u9fa5]{1,10}",
         "被动句": r"被[\u4e00-\u9fa5]{1,10}[了]?",
@@ -51,37 +51,37 @@ class GrammarDetector:
         "不管...都": r"不管[\u4e00-\u9fa5，。！？]{1,50}都",
     }
 
-    # 语法点描述（用于 Claude 验证）
+    # 語法點描述（用於 Claude 驗證）
     GRAMMAR_DESCRIPTIONS = {
-        "把字句": "处置式，表示对某事物进行处理或处置。基本结构：主语 + 把 + 宾语 + 动词 + 其他成分",
-        "被动句": "被动语态，表示主语是动作的承受者。基本结构：主语 + 被 + (施事者) + 动词 + 其他成分",
-        "比较句": "比较句式，用'比'表示两者之间的比较。基本结构：A + 比 + B + 形容词/副词",
-        "使役句": "使役句式，表示让、叫、请别人做某事。基本结构：主语 + 让/叫/请 + 人 + 动词短语",
-        "连动句": "连动句，一个主语连续做两个或多个动作。",
-        "兼语句": "兼语句，一个成分既是前一动词的宾语，又是后一动词的主语。",
-        "是...的": "强调句式，强调时间、地点、方式等。",
-        "虽然...但是": "转折复句，表示转折关系。",
-        "不但...而且": "递进复句，表示递进关系。",
-        "因为...所以": "因果复句，表示因果关系。",
-        "如果...就": "假设复句，表示假设条件。",
-        "既...又": "并列复句，表示两种情况同时存在。",
-        "一边...一边": "并列复句，表示两个动作同时进行。",
-        "越...越": "递进复句，表示程度递增。",
+        "把字句": "處置式，表示對某事物進行處理或處置。基本結構：主語 + 把 + 賓語 + 動詞 + 其他成分",
+        "被動句": "被動語態，表示主語是動作的承受者。基本結構：主語 + 被 + (施事者) + 動詞 + 其他成分",
+        "比較句": "比較句式，用'比'表示兩者之間的比較。基本結構：A + 比 + B + 形容詞/副詞",
+        "使役句": "使役句式，表示讓、叫、請別人做某事。基本結構：主語 + 讓/叫/請 + 人 + 動詞短語",
+        "連動句": "連動句，一個主語連續做兩個或多個動作。",
+        "兼語句": "兼語句，一個成分既是前一動詞的賓語，又是後一動詞的主語。",
+        "是...的": "強調句式，強調時間、地點、方式等。",
+        "雖然...但是": "轉折複句，表示轉折關係。",
+        "不但...而且": "遞進複句，表示遞進關係。",
+        "因為...所以": "因果複句，表示因果關係。",
+        "如果...就": "假設複句，表示假設條件。",
+        "既...又": "並列複句，表示兩種情況同時存在。",
+        "一邊...一邊": "並列複句，表示兩個動作同時進行。",
+        "越...越": "遞進複句，表示程度遞增。",
     }
 
     def detect_grammar_pattern(self, article_text: str, grammar_name: str) -> List[Dict[str, Any]]:
         """
-        使用正则表达式检测语法点
+        使用正則表達式檢測語法點
 
         Args:
             article_text: 文章文本
-            grammar_name: 语法点名称
+            grammar_name: 語法點名稱
 
         Returns:
-            匹配结果列表
+            匹配結果列表
             [
                 {
-                    "text": "把垃圾放进垃圾桶",
+                    "text": "把垃圾放進垃圾桶",
                     "start": 12,
                     "end": 18,
                     "position": [12, 18]
@@ -91,7 +91,7 @@ class GrammarDetector:
         """
         pattern = self.GRAMMAR_PATTERNS.get(grammar_name)
         if not pattern:
-            # 如果没有预定义的模式，返回空列表
+            # 如果沒有預定義的模式，返回空列表
             return []
 
         matches = []
@@ -111,31 +111,31 @@ class GrammarDetector:
         grammar_name: str
     ) -> List[Dict[str, Any]]:
         """
-        使用 jieba 分词和词性标注辅助检测语法点
+        使用 jieba 分詞和詞性標注輔助檢測語法點
 
         Args:
             article_text: 文章文本
-            grammar_name: 语法点名称
+            grammar_name: 語法點名稱
 
         Returns:
-            检测结果列表
+            檢測結果列表
         """
-        # 检查 jieba 是否可用
+        # 檢查 jieba 是否可用
         if not JIEBA_AVAILABLE:
             # 如果 jieba 不可用，返回空列表
             return []
 
-        # 分词并标注词性
+        # 分詞並標注詞性
         words = list(pseg.cut(article_text))
 
         matches = []
 
-        # 根据不同语法点实现不同的检测逻辑
+        # 根據不同語法點實現不同的檢測邏輯
         if grammar_name == "把字句":
             matches = self._detect_ba_structure(article_text, words)
-        elif grammar_name == "被动句":
+        elif grammar_name == "被動句":
             matches = self._detect_bei_structure(article_text, words)
-        elif grammar_name == "比较句":
+        elif grammar_name == "比較句":
             matches = self._detect_bi_structure(article_text, words)
 
         return matches
@@ -146,26 +146,26 @@ class GrammarDetector:
         words: List[tuple]
     ) -> List[Dict[str, Any]]:
         """
-        检测把字句结构
-        基本模式：把 + 名词 + 动词
+        檢測把字句結構
+        基本模式：把 + 名詞 + 動詞
         """
         matches = []
         text_position = 0
 
         for i, (word, pos) in enumerate(words):
             if word == "把" and i + 2 < len(words):
-                # 检查后面是否有名词和动词
+                # 檢查後面是否有名詞和動詞
                 next_word, next_pos = words[i + 1]
                 next_next_word, next_next_pos = words[i + 2]
 
                 if next_pos.startswith('n') and next_next_pos.startswith('v'):
-                    # 找到把字句结构
+                    # 找到把字句結構
                     start_pos = text.find(word, text_position)
-                    # 估算结束位置（把 + 后续2-3个词）
+                    # 估算結束位置（把 + 後續2-3個詞）
                     phrase_length = len(word) + len(next_word) + len(next_next_word)
-                    end_pos = start_pos + phrase_length + 5  # 加一些余量
+                    end_pos = start_pos + phrase_length + 5  # 加一些餘量
 
-                    # 提取实际文本
+                    # 提取實際文本
                     phrase = text[start_pos:min(end_pos, len(text))]
 
                     matches.append({
@@ -184,14 +184,14 @@ class GrammarDetector:
         text: str,
         words: List[tuple]
     ) -> List[Dict[str, Any]]:
-        """检测被动句结构"""
+        """檢測被動句結構"""
         matches = []
         text_position = 0
 
         for i, (word, pos) in enumerate(words):
             if word == "被" and i + 1 < len(words):
                 start_pos = text.find(word, text_position)
-                # 被动句通常包含被 + 若干词
+                # 被動句通常包含被 + 若干詞
                 end_estimate = start_pos + 20
                 phrase = text[start_pos:min(end_estimate, len(text))]
 
@@ -211,7 +211,7 @@ class GrammarDetector:
         text: str,
         words: List[tuple]
     ) -> List[Dict[str, Any]]:
-        """检测比较句结构"""
+        """檢測比較句結構"""
         matches = []
         text_position = 0
 
@@ -239,53 +239,53 @@ class GrammarDetector:
         use_segmentation: bool = False
     ) -> List[Dict[str, Any]]:
         """
-        检测语法点（综合方法）
+        檢測語法點（綜合方法）
 
         Args:
             article_text: 文章文本
-            grammar_name: 语法点名称
-            use_segmentation: 是否使用分词辅助检测
+            grammar_name: 語法點名稱
+            use_segmentation: 是否使用分詞輔助檢測
 
         Returns:
-            检测结果列表
+            檢測結果列表
         """
-        # 优先使用正则表达式
+        # 優先使用正則表達式
         pattern_matches = self.detect_grammar_pattern(article_text, grammar_name)
 
-        # 如果正则没有匹配到，且要求使用分词，则尝试分词方法
+        # 如果正則沒有匹配到，且要求使用分詞，則嘗試分詞方法
         if not pattern_matches and use_segmentation:
             return self.detect_grammar_by_segmentation(article_text, grammar_name)
 
         return pattern_matches
 
     def get_grammar_description(self, grammar_name: str) -> str:
-        """获取语法点描述"""
+        """獲取語法點描述"""
         return self.GRAMMAR_DESCRIPTIONS.get(
             grammar_name,
-            f"{grammar_name}：语法点描述"
+            f"{grammar_name}：語法點描述"
         )
 
     def get_supported_grammar_points(self) -> List[str]:
-        """获取支持的语法点列表"""
+        """獲取支持的語法點列表"""
         return list(self.GRAMMAR_PATTERNS.keys())
 
 
-# 便捷函数
+# 便捷函數
 def detect_grammar(
     article_text: str,
     grammar_name: str,
     use_segmentation: bool = False
 ) -> List[Dict[str, Any]]:
     """
-    便捷函数：检测语法点
+    便捷函數：檢測語法點
 
     Args:
         article_text: 文章文本
-        grammar_name: 语法点名称
-        use_segmentation: 是否使用分词辅助检测
+        grammar_name: 語法點名稱
+        use_segmentation: 是否使用分詞輔助檢測
 
     Returns:
-        检测结果列表
+        檢測結果列表
     """
     detector = GrammarDetector()
     return detector.detect_grammar(article_text, grammar_name, use_segmentation)

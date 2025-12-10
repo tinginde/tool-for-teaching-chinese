@@ -1,6 +1,6 @@
 """
-验证器模块
-包含生词检测、语法点检测和综合验证引擎
+驗證器模組
+包含生詞檢測、語法點檢測和綜合驗證引擎
 """
 from .vocabulary_detector import VocabularyDetector, detect_vocabulary
 from .grammar_detector import GrammarDetector, detect_grammar

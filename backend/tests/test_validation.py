@@ -1,12 +1,12 @@
 """
-准确性验证引擎测试
+準確性驗證引擎測試
 
-测试生词检测、语法点检测和综合验证功能
+測試生詞檢測、語法點檢測和綜合驗證功能
 """
 import sys
 import os
 
-# 添加项目路径
+# 添加項目路徑
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from app.validators import (
@@ -17,123 +17,123 @@ from app.validators import (
 
 
 def test_vocabulary_detection():
-    """测试生词检测功能"""
+    """測試生詞檢測功能"""
     print("\n" + "="*60)
-    print("测试 1: 生词检测（目标准确率：100%）")
+    print("測試 1: 生詞檢測（目標準確率：100%）")
     print("="*60)
 
-    # 测试文章
+    # 測試文章
     article = """
-    保护环境很重要。我们应该把垃圾放进垃圾桶，不要乱丢。
-    环境保护不仅是政府的责任，也是每个人的责任。
-    我们要珍惜环境，让我们的城市更加美丽。
+    保護環境很重要。我們應該把垃圾放進垃圾桶，不要亂丟。
+    環境保護不僅是政府的責任，也是每個人的責任。
+    我們要珍惜環境，讓我們的城市更加美麗。
     """
 
-    # 目标生词
-    vocab_list = ["环境", "保护", "垃圾", "责任", "珍惜"]
+    # 目標生詞
+    vocab_list = ["環境", "保護", "垃圾", "責任", "珍惜"]
 
-    # 执行检测
+    # 執行檢測
     detector = VocabularyDetector()
     results = detector.detect_vocabulary(article, vocab_list)
 
-    # 打印结果
-    print("\n检测结果：")
+    # 打印結果
+    print("\n檢測結果：")
     for vocab in results["vocab_check"]:
         status = "✅" if vocab["found"] else "⚠️"
-        print(f"{status} 生词「{vocab['word']}」：{'出现' if vocab['found'] else '未出现'} {vocab['count']} 次")
+        print(f"{status} 生詞「{vocab['word']}」：{'出現' if vocab['found'] else '未出現'} {vocab['count']} 次")
         if vocab["positions"]:
             print(f"   位置：{vocab['positions']}")
 
-    # 覆盖率统计
+    # 覆蓋率統計
     coverage = detector.check_coverage(results["vocab_check"])
-    print(f"\n覆盖率：{coverage['found']}/{coverage['total']} ({coverage['coverage_rate']*100:.1f}%)")
+    print(f"\n覆蓋率：{coverage['found']}/{coverage['total']} ({coverage['coverage_rate']*100:.1f}%)")
 
     if coverage['missing_words']:
-        print(f"未出现的生词：{', '.join(coverage['missing_words'])}")
+        print(f"未出現的生詞：{', '.join(coverage['missing_words'])}")
 
     return results
 
 
 def test_grammar_detection():
-    """测试语法点检测功能"""
+    """測試語法點檢測功能"""
     print("\n" + "="*60)
-    print("测试 2: 语法点检测（目标准确率：90%）")
+    print("測試 2: 語法點檢測（目標準確率：90%）")
     print("="*60)
 
-    # 测试文章 - 包含多种语法点
+    # 測試文章 - 包含多種語法點
     article = """
-    今天的天气比昨天更热。妈妈让我把房间打扫干净。
-    虽然很累，但是我还是坚持做完了。我把书放在书架上，
-    把衣服挂在衣柜里。这个工作比我想象的要难一些。
+    今天的天氣比昨天更熱。媽媽讓我把房間打掃乾淨。
+    雖然很累，但是我還是堅持做完了。我把書放在書架上，
+    把衣服掛在衣櫃裡。這個工作比我想像的要難一些。
     """
 
-    # 目标语法点
-    grammar_points = ["把字句", "比较句", "虽然...但是", "使役句"]
+    # 目標語法點
+    grammar_points = ["把字句", "比較句", "雖然...但是", "使役句"]
 
     detector = GrammarDetector()
 
-    print("\n检测结果：")
+    print("\n檢測結果：")
     for grammar_name in grammar_points:
         matches = detector.detect_grammar(article, grammar_name)
 
         status = "✅" if matches else "⚠️"
-        print(f"\n{status} 语法点「{grammar_name}」：{'检测到' if matches else '未检测到'} {len(matches)} 个")
+        print(f"\n{status} 語法點「{grammar_name}」：{'檢測到' if matches else '未檢測到'} {len(matches)} 個")
 
         for i, match in enumerate(matches, 1):
             print(f"   {i}. 「{match['text']}」 位置：{match['position']}")
 
-    # 显示支持的语法点
-    print(f"\n支持的语法点总数：{len(detector.get_supported_grammar_points())} 个")
+    # 顯示支援的語法點
+    print(f"\n支援的語法點總數：{len(detector.get_supported_grammar_points())} 個")
 
     return matches
 
 
 def test_comprehensive_validation():
-    """测试综合验证功能（不使用 Claude API）"""
+    """測試綜合驗證功能（不使用 Claude API）"""
     print("\n" + "="*60)
-    print("测试 3: 综合验证引擎（快速模式）")
+    print("測試 3: 綜合驗證引擎（快速模式）")
     print("="*60)
 
-    # 测试文章
+    # 測試文章
     article = """
-    保护环境是每个人的责任。今天，我把垃圾分类做得很好。
-    虽然这需要更多时间，但是对环境保护很重要。
-    我们的城市比以前更干净了，因为大家都重视环保。
+    保護環境是每個人的責任。今天，我把垃圾分類做得很好。
+    雖然這需要更多時間，但是對環境保護很重要。
+    我們的城市比以前更乾淨了，因為大家都重視環保。
     """
 
-    # 语法点
+    # 語法點
     grammar_points = [
         {"name": "把字句", "tbcl": "A2"},
-        {"name": "比较句", "tbcl": "A2"},
-        {"name": "虽然...但是", "tbcl": "B1"}
+        {"name": "比較句", "tbcl": "A2"},
+        {"name": "雖然...但是", "tbcl": "B1"}
     ]
 
-    # 生词
+    # 生詞
     vocabulary = [
-        {"word": "环境", "pos": "N"},
-        {"word": "保护", "pos": "V"},
-        {"word": "责任", "pos": "N"},
+        {"word": "環境", "pos": "N"},
+        {"word": "保護", "pos": "V"},
+        {"word": "責任", "pos": "N"},
         {"word": "垃圾", "pos": "N"},
-        {"word": "重视", "pos": "V"}
+        {"word": "重視", "pos": "V"}
     ]
 
-    # 执行验证
+    # 執行驗證
     engine = ValidationEngine()
     results = engine.quick_validation(article, grammar_points, vocabulary)
 
-    # 打印结果
-    print("\n📊 验证结果总览")
-    print(f"整体通过：{'✅ 是' if results['overall_pass'] else '⚠️ 否'}")
+    # 打印結果
+    print("\n📊 驗證結果總覽")
+    print(f"整體通過：{'✅ 是' if results['overall_pass'] else '⚠️ 否'}")
 
-    print("\n📝 生词检测：")
+    print("\n📝 生詞檢測：")
     for vocab in results["vocab_check"]:
         status = "✅" if vocab["found"] else "⚠️"
-        print(f"{status} {vocab['word']}：出现 {vocab['count']} 次")
+        print(f"{status} {vocab['word']}：出現 {vocab['count']} 次")
 
-    print("\n📖 语法点检测：")
+    print("\n📖 語法點檢測：")
     for grammar in results["grammar_check"]:
         status = "✅" if grammar["found"] else "⚠️"
-        print(f"{status} {grammar['name']}：检测到 {grammar['count']} 个")
+        print(f"{status} {grammar['name']}：檢測到 {grammar['count']} 個")
         if grammar["examples"]:
             for example in grammar["examples"]:
                 print(f"   - {example}")
@@ -142,31 +142,31 @@ def test_comprehensive_validation():
 
 
 def test_position_accuracy():
-    """测试位置信息的准确性"""
+    """測試位置資訊的準確性"""
     print("\n" + "="*60)
-    print("测试 4: 位置信息准确性验证")
+    print("測試 4: 位置資訊準確性驗證")
     print("="*60)
 
-    article = "我把书放在桌子上。这本书比那本书厚。"
+    article = "我把書放在桌子上。這本書比那本書厚。"
 
-    # 测试生词位置
+    # 測試生詞位置
     detector = VocabularyDetector()
-    vocab_results = detector.detect_vocabulary(article, ["书", "桌子"])
+    vocab_results = detector.detect_vocabulary(article, ["書", "桌子"])
 
-    print("\n生词位置验证：")
+    print("\n生詞位置驗證：")
     for vocab in vocab_results["vocab_check"]:
-        print(f"\n词语：{vocab['word']}")
+        print(f"\n詞語：{vocab['word']}")
         for pos in vocab["positions"]:
             extracted = article[pos[0]:pos[1]]
             match = extracted == vocab['word']
             status = "✅" if match else "❌"
             print(f"  {status} 位置 {pos}：「{extracted}」 {'匹配' if match else '不匹配'}")
 
-    # 测试语法点位置
+    # 測試語法點位置
     grammar_detector = GrammarDetector()
     grammar_matches = grammar_detector.detect_grammar(article, "把字句")
 
-    print("\n语法点位置验证：")
+    print("\n語法點位置驗證：")
     for match in grammar_matches:
         extracted = article[match["start"]:match["end"]]
         print(f"  ✅ 位置 {match['position']}：「{extracted}」")
@@ -175,35 +175,35 @@ def test_position_accuracy():
 
 
 def run_all_tests():
-    """运行所有测试"""
-    print("\n🧪 准确性验证引擎 - 测试套件")
+    """運行所有測試"""
+    print("\n🧪 準確性驗證引擎 - 測試套件")
     print("="*60)
 
     try:
-        # 测试 1: 生词检测
+        # 測試 1: 生詞檢測
         test_vocabulary_detection()
 
-        # 测试 2: 语法点检测
+        # 測試 2: 語法點檢測
         test_grammar_detection()
 
-        # 测试 3: 综合验证
+        # 測試 3: 綜合驗證
         test_comprehensive_validation()
 
-        # 测试 4: 位置准确性
+        # 測試 4: 位置準確性
         test_position_accuracy()
 
         print("\n" + "="*60)
-        print("✅ 所有测试完成！")
+        print("✅ 所有測試完成！")
         print("="*60)
 
         print("\n📊 功能摘要：")
-        print("1. ✅ 生词检测 - 精确匹配，目标准确率 100%")
-        print("2. ✅ 语法点检测 - 正则 + jieba，目标准确率 90%")
-        print("3. ✅ 位置信息 - 支持视觉化标注")
-        print("4. ⏳ Claude API 验证 - 需要 API key 才能测试")
+        print("1. ✅ 生詞檢測 - 精確匹配，目標準確率 100%")
+        print("2. ✅ 語法點檢測 - 正則 + jieba，目標準確率 90%")
+        print("3. ✅ 位置資訊 - 支援視覺化標註")
+        print("4. ⏳ Claude API 驗證 - 需要 API key 才能測試")
 
     except Exception as e:
-        print(f"\n❌ 测试失败：{e}")
+        print(f"\n❌ 測試失敗：{e}")
         import traceback
         traceback.print_exc()
 

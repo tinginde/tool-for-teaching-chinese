@@ -1,7 +1,7 @@
 """
-准确性验证引擎
-整合生词检测、语法点检测和 Claude API 验证
-这是本专案的核心竞争优势功能
+準確性驗證引擎
+整合生詞檢測、語法點檢測和 Claude API 驗證
+這是本專案的核心競爭優勢功能
 """
 from typing import List, Dict, Any, Optional
 from .vocabulary_detector import VocabularyDetector
@@ -11,21 +11,21 @@ from .claude_validator import ClaudeValidator
 
 class ValidationEngine:
     """
-    准确性验证引擎
+    準確性驗證引擎
 
     功能：
-    1. 生词检测（精确匹配，100% 准确率）
-    2. 语法点检测（正则 + jieba，90% 准确率）
-    3. Claude API 语法验证（确保正确性）
-    4. 视觉化标注的位置信息
+    1. 生詞檢測（精確匹配，100% 準確率）
+    2. 語法點檢測（正則 + jieba，90% 準確率）
+    3. Claude API 語法驗證（確保正確性）
+    4. 視覺化標注的位置信息
     """
 
     def __init__(self, api_key: Optional[str] = None):
         """
-        初始化验证引擎
+        初始化驗證引擎
 
         Args:
-            api_key: Anthropic API key（可选）
+            api_key: Anthropic API key（可選）
         """
         self.vocab_detector = VocabularyDetector()
         self.grammar_detector = GrammarDetector()
@@ -39,26 +39,26 @@ class ValidationEngine:
         use_claude_validation: bool = True
     ) -> Dict[str, Any]:
         """
-        完整的验证流程
+        完整的驗證流程
 
-        这是核心功能，整合了所有验证步骤
+        這是核心功能，整合了所有驗證步驟
 
         Args:
             article_text: 文章文本
-            grammar_points: 语法点列表
+            grammar_points: 語法點列表
                 [
                     {"name": "把字句", "tbcl": "A2"},
-                    {"name": "比较句", "tbcl": "A2"}
+                    {"name": "比較句", "tbcl": "A2"}
                 ]
-            vocabulary: 生词列表
+            vocabulary: 生詞列表
                 [
-                    {"word": "环境", "pos": "N"},
-                    {"word": "保护", "pos": "V"}
+                    {"word": "環境", "pos": "N"},
+                    {"word": "保護", "pos": "V"}
                 ]
-            use_claude_validation: 是否使用 Claude API 验证
+            use_claude_validation: 是否使用 Claude API 驗證
 
         Returns:
-            完整的验证结果
+            完整的驗證結果
             {
                 "grammar_check": [...],
                 "vocab_check": [...],
@@ -66,20 +66,20 @@ class ValidationEngine:
                 "warnings": [...]
             }
         """
-        # 步骤 1: 生词检测（规则匹配，100% 准确率）
+        # 步驟 1: 生詞檢測（規則匹配，100% 準確率）
         vocab_results = self._validate_vocabulary(article_text, vocabulary)
 
-        # 步骤 2: 语法点检测（规则匹配 + 分词，90% 准确率）
+        # 步驟 2: 語法點檢測（規則匹配 + 分詞，90% 準確率）
         grammar_results = await self._validate_grammar_points(
             article_text,
             grammar_points,
             use_claude_validation
         )
 
-        # 步骤 3: 整体评估
+        # 步驟 3: 整體評估
         overall_pass = self._evaluate_overall_pass(grammar_results, vocab_results)
 
-        # 步骤 4: 生成警告信息
+        # 步驟 4: 生成警告信息
         warnings = self._generate_warnings(grammar_results, vocab_results)
 
         return {
@@ -103,9 +103,9 @@ class ValidationEngine:
         vocabulary: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """
-        验证生词
+        驗證生詞
 
-        使用精确字符串匹配，目标准确率：100%
+        使用精確字符串匹配，目標準確率：100%
         """
         vocab_list = [v["word"] for v in vocabulary]
         return self.vocab_detector.detect_vocabulary(article_text, vocab_list)
@@ -117,23 +117,23 @@ class ValidationEngine:
         use_claude_validation: bool
     ) -> List[Dict[str, Any]]:
         """
-        验证语法点
+        驗證語法點
 
-        使用规则匹配 + Claude API 验证
+        使用規則匹配 + Claude API 驗證
         """
         grammar_results = []
 
         for grammar in grammar_points:
             grammar_name = grammar["name"]
 
-            # 步骤 1: 规则匹配检测
+            # 步驟 1: 規則匹配檢測
             pattern_matches = self.grammar_detector.detect_grammar(
                 article_text,
                 grammar_name,
-                use_segmentation=True  # 使用分词辅助
+                use_segmentation=True  # 使用分詞輔助
             )
 
-            # 步骤 2: 准备基础结果
+            # 步驟 2: 準備基礎結果
             base_result = {
                 "name": grammar_name,
                 "found": len(pattern_matches) > 0,
@@ -143,7 +143,7 @@ class ValidationEngine:
                 "tbcl": grammar.get("tbcl", "Unknown")
             }
 
-            # 步骤 3: Claude API 验证（如果启用且有检测结果）
+            # 步驟 3: Claude API 驗證（如果啟用且有檢測結果）
             if use_claude_validation and pattern_matches and self.claude_validator:
                 try:
                     grammar_description = self.grammar_detector.get_grammar_description(grammar_name)
@@ -155,7 +155,7 @@ class ValidationEngine:
                         pattern_matches
                     )
 
-                    # 合并 AI 验证结果
+                    # 合併 AI 驗證結果
                     base_result.update({
                         "correct": ai_validation["is_correct"],
                         "confidence": ai_validation["confidence"],
@@ -164,16 +164,16 @@ class ValidationEngine:
                         "suggestions": ai_validation["suggestions"]
                     })
                 except Exception as e:
-                    # 如果 AI 验证失败，标记为正确但置信度低
+                    # 如果 AI 驗證失敗，標記為正確但置信度低
                     base_result.update({
                         "correct": True,
                         "confidence": 0.7,
-                        "issues": [f"AI 验证失败: {str(e)}"],
+                        "issues": [f"AI 驗證失敗: {str(e)}"],
                         "missed_instances": [],
                         "suggestions": []
                     })
             else:
-                # 没有使用 Claude 验证，保守估计为正确
+                # 沒有使用 Claude 驗證，保守估計為正確
                 base_result.update({
                     "correct": len(pattern_matches) > 0,
                     "confidence": 0.9 if len(pattern_matches) > 0 else 0.0,
@@ -192,18 +192,18 @@ class ValidationEngine:
         vocab_results: Dict[str, Any]
     ) -> bool:
         """
-        评估整体是否通过验证
+        評估整體是否通過驗證
 
-        通过条件：
-        1. 所有生词都出现
-        2. 所有语法点都出现且正确
+        通過條件：
+        1. 所有生詞都出現
+        2. 所有語法點都出現且正確
         """
-        # 检查生词
+        # 檢查生詞
         all_vocab_found = all(
             v["found"] for v in vocab_results["vocab_check"]
         )
 
-        # 检查语法点
+        # 檢查語法點
         all_grammar_found_and_correct = all(
             g["found"] and g["correct"] for g in grammar_results
         )
@@ -218,41 +218,41 @@ class ValidationEngine:
         """生成警告信息"""
         warnings = []
 
-        # 检查未出现的生词
+        # 檢查未出現的生詞
         missing_vocab = [
             v["word"] for v in vocab_results["vocab_check"] if not v["found"]
         ]
         if missing_vocab:
-            warnings.append(f"以下生词未出现：{', '.join(missing_vocab)}")
+            warnings.append(f"以下生詞未出現：{', '.join(missing_vocab)}")
 
-        # 检查未出现的语法点
+        # 檢查未出現的語法點
         missing_grammar = [
             g["name"] for g in grammar_results if not g["found"]
         ]
         if missing_grammar:
-            warnings.append(f"以下语法点未出现：{', '.join(missing_grammar)}")
+            warnings.append(f"以下語法點未出現：{', '.join(missing_grammar)}")
 
-        # 检查不正确的语法点
+        # 檢查不正確的語法點
         incorrect_grammar = [
             g["name"] for g in grammar_results
             if g["found"] and not g["correct"]
         ]
         if incorrect_grammar:
-            warnings.append(f"以下语法点使用不正确：{', '.join(incorrect_grammar)}")
+            warnings.append(f"以下語法點使用不正確：{', '.join(incorrect_grammar)}")
 
-        # 检查置信度低的语法点
+        # 檢查置信度低的語法點
         low_confidence_grammar = [
             f"{g['name']}（置信度：{g['confidence']:.2f}）"
             for g in grammar_results
             if g["found"] and g["confidence"] < 0.7
         ]
         if low_confidence_grammar:
-            warnings.append(f"以下语法点置信度较低：{', '.join(low_confidence_grammar)}")
+            warnings.append(f"以下語法點置信度較低：{', '.join(low_confidence_grammar)}")
 
         return warnings
 
     def _calculate_pass_rate(self, grammar_results: List[Dict[str, Any]]) -> float:
-        """计算语法点通过率"""
+        """計算語法點通過率"""
         if not grammar_results:
             return 0.0
 
@@ -263,7 +263,7 @@ class ValidationEngine:
         return passed / len(grammar_results)
 
     def _calculate_vocab_pass_rate(self, vocab_check: List[Dict[str, Any]]) -> float:
-        """计算生词通过率"""
+        """計算生詞通過率"""
         if not vocab_check:
             return 0.0
 
@@ -277,14 +277,14 @@ class ValidationEngine:
         vocabulary: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """
-        快速验证（不使用 Claude API）
+        快速驗證（不使用 Claude API）
 
-        适用于实时编辑场景
+        適用於實時編輯場景
         """
-        # 生词检测
+        # 生詞檢測
         vocab_results = self._validate_vocabulary(article_text, vocabulary)
 
-        # 语法点检测（仅规则匹配）
+        # 語法點檢測（僅規則匹配）
         grammar_results = []
         for grammar in grammar_points:
             pattern_matches = self.grammar_detector.detect_grammar(
@@ -300,7 +300,7 @@ class ValidationEngine:
                 "examples": [m["text"] for m in pattern_matches]
             })
 
-        # 简单的通过判断
+        # 簡單的通過判斷
         overall_pass = (
             all(v["found"] for v in vocab_results["vocab_check"]) and
             all(g["found"] for g in grammar_results)
@@ -313,7 +313,7 @@ class ValidationEngine:
         }
 
 
-# 便捷函数
+# 便捷函數
 async def validate_article(
     article_text: str,
     grammar_points: List[Dict[str, Any]],
@@ -322,17 +322,17 @@ async def validate_article(
     use_claude: bool = True
 ) -> Dict[str, Any]:
     """
-    便捷函数：验证文章
+    便捷函數：驗證文章
 
     Args:
         article_text: 文章文本
-        grammar_points: 语法点列表
-        vocabulary: 生词列表
-        api_key: API key（可选）
-        use_claude: 是否使用 Claude 验证
+        grammar_points: 語法點列表
+        vocabulary: 生詞列表
+        api_key: API key（可選）
+        use_claude: 是否使用 Claude 驗證
 
     Returns:
-        验证结果
+        驗證結果
     """
     engine = ValidationEngine(api_key)
     return await engine.comprehensive_validation(
